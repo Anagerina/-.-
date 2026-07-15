@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Мой ребенок</title>
+    <style>
+        /* ===== Общие сбросы ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f2f2f7;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 16px 12px 40px;
+        }
+
+        .app {
+            max-width: 400px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 20px 18px 30px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.06);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ===== СТРАНИЦЫ ===== */
+        .page {
+            display: none;
+            animation: fadeSlide 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeSlide {
+            0% { opacity: 0; transform: translateY(8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== КНОПКА НАЗАД ===== */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: #6C3B9E;
+            cursor: pointer;
+            padding: 6px 0 16px 0;
+        }
+
+        .back-btn::before {
+            content: "←";
+            font-size: 20px;
+        }
+
+        /* ===== Фиолетовый блок с именем и классом ===== */
+        .profile-card {
+            background: #6C3B9E;
+            border-radius: 16px;
+            padding: 16px 18px;
+            margin-bottom: 24px;
+            color: #ffffff;
+        }
+
+        .profile-card .child-name {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .profile-card .child-grade {
+            font-size: 15px;
+            font-weight: 400;
+            opacity: 0.85;
+            margin-top: 4px;
+        }
+
+        /* ===== Предметы ===== */
+        .subject-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .subject-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .subject-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        /* Круглая цифра */
+        .subject-score {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+            transition: transform 0.15s ease;
+        }
+
+        .subject-score.green { background: #34C759; }
+        .subject-score.yellow { background: #FFCC00; color: #1C1C1E; }
+        .subject-score.red { background: #FF3B30; }
+
+        .subject-name {
+            font-size: 17px;
+            font-weight: 500;
+            color: #1C1C1E;
+        }
+
+        .subject-hint {
+            font-size: 14px;
+            color: #6C6C70;
+            padding-left: 62px;
+        }
+
+        .subject-hint strong {
+            color: #1C1C1E;
+            font-weight: 500;
+        }
+
+        .bottom-tip {
+            margin-top: 28px;
+            background: #F2F0F7;
+            border-radius: 14px;
+            padding: 14px 16px;
+            font-size: 15px;
+            color: #1C1C1E;
+            border-left: 4px solid #6C3B9E;
+        }
+
+        .bottom-tip span {
+            font-weight: 500;
+        }
+
+        /* ===== ДАШБОРД (страница 2) ===== */
+        .dashboard-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .dashboard-sub {
+            font-size: 15px;
+            color: #6C6C70;
+            margin-bottom: 20px;
+        }
+
+        .chart-block {
+            background: #f9f9f9;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .chart-block .chart-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1C1C1E;
+            margin-bottom: 10px;
+        }
+
+        /* Простые графики-заглушки (потом замените на реальные) */
+        .chart-bars {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            height: 80px;
+            gap: 6px;
+        }
+
+        .chart-bars .bar {
+            flex: 1;
+            background: #6C3B9E;
+            border-radius: 6px 6px 0 0;
+            min-height: 8px;
+            transition: height 0.3s;
+        }
+
+        .chart-bars .bar:nth-child(1) { height: 60px; background: #34C759; }
+        .chart-bars .bar:nth-child(2) { height: 40px; background: #FFCC00; }
+        .chart-bars .bar:nth-child(3) { height: 70px; background: #34C759; }
+        .chart-bars .bar:nth-child(4) { height: 30px; background: #FF3B30; }
+        .chart-bars .bar:nth-child(5) { height: 55px; background: #34C759; }
+        .chart-bars .bar:nth-child(6) { height: 45px; background: #FFCC00; }
+        .chart-bars .bar:nth-child(7) { height: 65px; background: #34C759; }
+
+        .chart-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #6C6C70;
+            margin-top: 6px;
+        }
+
+        /* Список тем с процентами */
+        .topic-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .topic-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .topic-item .topic-name {
+            color: #1C1C1E;
+        }
+
+        .topic-item .topic-percent {
+            font-weight: 600;
+        }
+
+        .topic-item .topic-percent.green { color: #34C759; }
+        .topic-item .topic-percent.yellow { color: #FF9500; }
+        .topic-item .topic-percent.red { color: #FF3B30; }
+
+        /* ===== Адаптив ===== */
+        @media (max-width: 380px) {
+            .app { padding: 16px 12px 24px; }
+            .subject-score { width: 42px; height: 42px; font-size: 19px; }
+            .subject-hint { padding-left: 56px; font-size: 13px; }
+            .chart-bars { height: 60px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+
+        <!-- ============================================================ -->
+        <!-- СТРАНИЦА 1: ГЛАВНАЯ -->
+        <!-- ============================================================ -->
+        <div id="page-main" class="page active">
+
+            <!-- Фиолетовая карточка -->
+            <div class="profile-card">
+                <div class="child-name">Мария Попова</div>
+                <div class="child-grade">Учится по программе 3-го класса</div>
+            </div>
+
+            <!-- Список предметов -->
+            <div class="subject-list">
+
+                <div class="subject-item" data-subject="Математика">
+                    <div class="subject-row">
+                        <div class="subject-score green">9</div>
+                        <div class="subject-name">Математика</div>
+                    </div>
+                    <div class="subject-hint">Ваш ребёнок справляется отлично</div>
+                </div>
+
+                <div class="subject-item" data-subject="Русский язык">
+                    <div class="subject-row">
+                        <div class="subject-score yellow">6</div>
+                        <div class="subject-name">Русский язык</div>
+                    </div>
+                    <div class="subject-hint"><strong>Повторите тему</strong> «Глаголы»</div>
+                </div>
+
+                <div class="subject-item" data-subject="Окружающий мир">
+                    <div class="subject-row">
+                        <div class="subject-score green">9</div>
+                        <div class="subject-name">Окружающий мир</div>
+                    </div>
+                    <div class="subject-hint">Замечательные результаты</div>
+                </div>
+
+                <div class="subject-item" data-subject="Английский язык">
+                    <div class="subject-row">
+                        <div class="subject-score red">4</div>
+                        <div class="subject-name">Английский язык</div>
+                    </div>
+                    <div class="subject-hint"><strong>Перейдите в статистику</strong>, чтобы узнать, как помочь ребёнку</div>
+                </div>
+
+            </div>
+
+            <div class="bottom-tip">
+                💡 <span>Совет:</span> Нажмите на любой предмет, чтобы увидеть детальную статистику
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- СТРАНИЦА 2: ДАШБОРД -->
+        <!-- ============================================================ -->
+        <div id="page-dashboard" class="page">
+
+            <button class="back-btn" id="backBtn">Назад</button>
+
+            <div class="dashboard-title" id="dashSubject">Математика</div>
+            <div class="dashboard-sub">Статистика за последние 30 дней</div>
+
+            <!-- График 1: решённые задания -->
+            <div class="chart-block">
+                <div class="chart-label">📊 Решённые задания за месяц</div>
+                <div class="chart-bars">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
+                <div class="chart-row">
+                    <span>1 нед.</span>
+                    <span>2 нед.</span>
+                    <span>3 нед.</span>
+                    <span>4 нед.</span>
+                </div>
+            </div>
+
+            <!-- График 2: время по темам (заглушка) -->
+            <div class="chart-block">
+                <div class="chart-label">⏱ Время по темам (мин)</div>
+                <div class="topic-list">
+                    <div class="topic-item">
+                        <span class="topic-name">Дроби</span>
+                        <span class="topic-percent green">10 мин</span>
+                    </div>
+                    <div class="topic-item">
+                        <span class="topic-name">Умножение</span>
+                        <span class="topic-percent green">15 мин</span>
+                    </div>
+                    <div class="topic-item">
+                        <span class="topic-name">Уравнения</span>
+                        <span class="topic-percent yellow">7 мин</span>
+                    </div>
+                    <div class="topic-item">
+                        <span class="topic-name">Задачи на логику</span>
+                        <span class="topic-percent green">12 мин</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- График 3: успеваемость по темам -->
+            <div class="chart-block">
+                <div class="chart-label">📈 Успеваемость по темам (%)</div>
+                <div class="topic-list">
+                    <div class="topic-item">
+                        <span class="topic-name">Дроби</span>
+                        <span class="topic-percent green">80% (8/10)</span>
+                    </div>
+                    <div class="topic-item">
+                        <span class="topic-name">Умножение</span>
+                        <span class="topic-percent green">70% (7/10)</span>
+                    </div>
+                    <div class="topic-item">
+                        <span class="topic-name">Уравнения</span>
+                        <span class="topic-percent yellow">50% (5/10)</span>
+                    </div>
+                    <div class="topic-item">
+                        <span class="topic-name">Задачи на логику</span>
+                        <span class="topic-percent red">30% (3/10)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-tip">
+                💡 <span>Рекомендация:</span> Уделите внимание уравнениям и задачам на логику
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ================================================================
+        // ЛОГИКА ПЕРЕКЛЮЧЕНИЯ СТРАНИЦ
+        // ================================================================
+
+        const pageMain = document.getElementById('page-main');
+        const pageDash = document.getElementById('page-dashboard');
+        const dashSubject = document.getElementById('dashSubject');
+        const backBtn = document.getElementById('backBtn');
+
+        // Все предметы — вешаем обработчик клика
+        const subjectItems = document.querySelectorAll('.subject-item');
+
+        subjectItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // Берём название предмета из data-атрибута или из текста
+                const subjectName = this.getAttribute('data-subject') ||
+                                    this.querySelector('.subject-name')?.textContent ||
+                                    'Предмет';
+
+                // Меняем заголовок на дашборде
+                dashSubject.textContent = subjectName;
+
+                // Показываем страницу дашборда, скрываем главную
+                pageMain.classList.remove('active');
+                pageDash.classList.add('active');
+
+                // Прокручиваем вверх, чтобы начать с шапки
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // Кнопка "Назад" — возврат на главную
+        backBtn.addEventListener('click', function() {
+            pageDash.classList.remove('active');
+            pageMain.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Дополнительно: если нажать на "Совет" внизу, он тоже ведёт на статистику
+        // (по желанию — можно закомментировать)
+        // Для удобства добавим клик по подсказке "Нажмите на предмет"
+        // Сделаем так, чтобы подсказка не мешала — оставим как есть
+        console.log('✅ Приложение готово! Нажимайте на предметы.');
+    </script>
+</body>
+</html>
